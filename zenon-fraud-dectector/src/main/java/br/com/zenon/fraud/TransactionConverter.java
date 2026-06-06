@@ -1,21 +1,21 @@
 package br.com.zenon.fraud;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 public class TransactionConverter {
 
-    public static Transaction toTransaction(String strStep,
-                                            String strType,
-                                            String strAmount,
-                                            String strNameOrig,
-                                            String strOldbalanceOrg,
-                                            String strNewbalanceOrig,
-                                            String strNameDest,
-                                            String strPldbalanceDest,
-                                            String strNewbalanceDest,
-                                            String strIsFraud,
-                                            String strIsFlaggedFraud) {
-
+    public static Optional<Transaction> toTransaction(String strStep,
+                                                      String strType,
+                                                      String strAmount,
+                                                      String strNameOrig,
+                                                      String strOldbalanceOrg,
+                                                      String strNewbalanceOrig,
+                                                      String strNameDest,
+                                                      String strPldbalanceDest,
+                                                      String strNewbalanceDest,
+                                                      String strIsFraud,
+                                                      String strIsFlaggedFraud) {
         Integer step = Integer.parseInt(strStep);
         TransactionType type = TransactionType.valueOf(strType);
         BigDecimal amount = new BigDecimal(strAmount);
@@ -32,25 +32,10 @@ public class TransactionConverter {
         BalanceInfo origin = new BalanceInfo(strNameOrig, oldAmountOrig, newAmountOrig);
         BalanceInfo destination = new BalanceInfo(strNameDest, oldAmountDest, newAmountDest);
 
-        return new Transaction(info, origin, destination);
-
+        return Optional.of(new Transaction(info, origin, destination));
     }
 
-    public static Transaction csvLineToTransaction(String strLine) {
-        String[] line = strLine.split(",");
-        return toTransaction(
-                line[0],
-                line[1],
-                line[2],
-                line[3],
-                line[4],
-                line[5],
-                line[6],
-                line[7],
-                line[8],
-                line[9],
-                line[10]
-        );
+    public static String[] strLineToArray(String line) {
+        return line.split(",");
     }
-
 }
