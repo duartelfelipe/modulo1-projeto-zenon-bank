@@ -19,8 +19,8 @@ public class TransactionConverter {
         Integer step = Integer.parseInt(strStep);
         TransactionType type = TransactionType.valueOf(strType);
         BigDecimal amount = new BigDecimal(strAmount);
-        Boolean isFraud = Boolean.parseBoolean(strIsFraud);
-        Boolean isFlaggedFraud = Boolean.parseBoolean(strIsFlaggedFraud);
+        Boolean isFraud = "1".equals(strIsFraud);
+        Boolean isFlaggedFraud = "1".equals(strIsFlaggedFraud);
 
         BigDecimal oldAmountOrig = new BigDecimal(strOldbalanceOrg);
         BigDecimal newAmountOrig = new BigDecimal(strNewbalanceOrig);

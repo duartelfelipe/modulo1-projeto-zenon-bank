@@ -11,37 +11,47 @@ import java.util.Optional;
 public class TransactionIngestor {
 
     private final String fileName;
-    private final List<Transaction> success;
-    private final List<String> fail;
+    private final int batchSize;
+    private final List<Transaction> transactions;
+    private final List<String> loadErrors;
 
-    TransactionIngestor(String fileName) {
+
+
+    TransactionIngestor(String fileName, int batchSize) {
         this.fileName = fileName;
-        this.success = new ArrayList<>();
-        this.fail = new ArrayList<>();
+        this.batchSize = batchSize;
+        this.transactions = new ArrayList<>();
+        this.loadErrors = new ArrayList<>();
     }
 
-    public void process() throws IOException {
+    public List<Transaction> loadTransactions() throws IOException {
         FileReader fr = getFileReader();
 
         try (BufferedReader br = new BufferedReader(fr)) {
 
             int count = 0;
             String line;
-            while (((line = br.readLine()) != null)) {
+
+            while (((line = br.readLine()) != null) && (count <= batchSize)) {
                 if (count > 0) {
                     try {
-                        success.add(
+                        transactions.add(
                                 processLine(line)
-                                        .orElseThrow(() -> new RuntimeException("Unexpected error."))
+                                        .orElseThrow(() -> new RuntimeException("Unexpected error processing line."))
                         );
                     } catch (Exception ex) {
                         String error = String.format("Error: %s -> %s", ex.getMessage(), line);
                         System.err.println(error);
-                        fail.add(error);
+                        loadErrors.add(error);
                     }
                 }
                 count++;
             }
+
+            return transactions;
+
+        } catch (Exception ex) {
+            throw new RuntimeException("Unexpected error loading transactions.");
         }
     }
 
@@ -96,13 +106,13 @@ public class TransactionIngestor {
                 strIsFlaggedFraud);
     }
 
-    public void report() {
-        IO.println("---Errors---");
-        fail.forEach(IO::println);
-        IO.println("Total: " + fail.size());
-        IO.println();
-        IO.println("---Success---");
-        success.forEach(trx -> IO.println(trx.toString()));
-        IO.println("Total: " + success.size());
-    }
+//    public void report() {
+//        IO.println("---Errors---");
+//        loadErrors.forEach(IO::println);
+//        IO.println("Total: " + loadErrors.size());
+//        IO.println();
+//        IO.println("---Success---");
+//        transactions.forEach(trx -> IO.println(trx.toString()));
+//        IO.println("Total: " + transactions.size());
+//    }
 }
