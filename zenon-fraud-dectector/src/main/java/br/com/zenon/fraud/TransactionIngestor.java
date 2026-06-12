@@ -1,10 +1,7 @@
 package br.com.zenon.fraud;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 
 public class TransactionIngestor {
@@ -16,26 +13,17 @@ public class TransactionIngestor {
     }
 
     public List<Transaction> ingest() {
-        List<Transaction> transactions = new ArrayList<>();
-
         try {
-            Path path = Paths.get(fileName);
-            BufferedReader br = new BufferedReader(new FileReader(path.toFile()));
 
-            int count = 0;
-            while ((br.readLine() != null) && (count <= 1000)) {
-                if (count > 0) {
-                    transactions.add(
-                            TransactionConverter.csvLineToTransaction(br.readLine())
-                    );
-                }
-                count++;
-            }
+            Path path = Path.of(fileName);
+            return Files.readAllLines(path).stream()
+                    .skip(1)
+                    .limit(1000)
+                    .map(TransactionConverter::csvLineToTransaction)
+                    .toList();
 
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
-
-        return transactions;
     }
 }

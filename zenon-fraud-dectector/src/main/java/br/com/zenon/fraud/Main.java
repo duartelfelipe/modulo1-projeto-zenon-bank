@@ -7,9 +7,8 @@ public class Main {
     private static final String FILE_NAME = "data/paysim_log.csv";
 
     void main() {
-        new TransactionIngestor(FILE_NAME).ingest()
-                .stream()
-                .limit(10)
+        new TransactionIngestor(FILE_NAME)
+                .ingest()
                 .forEach(IO::println);
     }
 }
