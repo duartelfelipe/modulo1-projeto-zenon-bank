@@ -10,7 +10,7 @@ public class FraudAnalyzer {
 
     public static void analyze(List<Transaction> transactions) {
         List<Transaction> frauds = transactions.stream()
-                .filter(trx -> trx.info().isFraud())
+                .filter(Transaction::isFraud)
                 .toList();
 
         long totalFrauds = frauds.size();
@@ -18,8 +18,8 @@ public class FraudAnalyzer {
 
         DecimalFormat df = new DecimalFormat("#,##0.00");
         List<String> top3MaxAmount = transactions.stream()
-                .filter(trx -> trx.info().isFraud())
-                .map(trx -> trx.info().amount().abs())
+                .filter(Transaction::isFraud)
+                .map(trx -> trx.amount().abs())
                 .sorted(Comparator.reverseOrder())
                 .limit(3)
                 .map(df::format)
@@ -28,8 +28,8 @@ public class FraudAnalyzer {
         top3MaxAmount.forEach(IO::println);
 
         Set<String> topCustomers = transactions.stream()
-                .filter(trx -> trx.info().isFraud())
-                .sorted(Comparator.comparing(Transaction::info, Comparator.comparing(TransactionInfo::amount)).reversed())
+                .filter(Transaction::isFraud)
+                .sorted(Comparator.comparing(Transaction::amount).reversed())
                 .map(trx -> trx.origin().customer())
                 .limit(5)
                 .collect(Collectors.toSet());
@@ -37,16 +37,16 @@ public class FraudAnalyzer {
         topCustomers.forEach(IO::println);
 
         double sumFraudsAmount = transactions.stream()
-                .filter(trx -> trx.info().isFraud())
-                .mapToDouble(trx -> trx.info().amount().doubleValue())
+                .filter(Transaction::isFraud)
+                .mapToDouble(trx -> trx.amount().doubleValue())
                 .sum();
         IO.println("4. Prejuizo total: " + df.format(sumFraudsAmount));
 
         IO.println("5. Fraudes por Tipo:");
         transactions.stream()
-                .filter(trx -> trx.info().isFraud())
+                .filter(Transaction::isFraud)
                 .collect(Collectors.groupingBy(
-                        trx -> trx.info().type(),
+                        Transaction::type,
                         Collectors.counting()
                 ))
                 .forEach((k, v) -> IO.println(" - " + k + ": " + v));

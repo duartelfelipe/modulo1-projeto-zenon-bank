@@ -5,37 +5,72 @@ import java.util.Optional;
 
 public class TransactionConverter {
 
-    public static Optional<Transaction> toTransaction(String strStep,
-                                                      String strType,
-                                                      String strAmount,
-                                                      String strNameOrig,
-                                                      String strOldbalanceOrg,
-                                                      String strNewbalanceOrig,
-                                                      String strNameDest,
-                                                      String strPldbalanceDest,
-                                                      String strNewbalanceDest,
-                                                      String strIsFraud,
-                                                      String strIsFlaggedFraud) {
-        Integer step = Integer.parseInt(strStep);
-        TransactionType type = TransactionType.valueOf(strType);
-        BigDecimal amount = new BigDecimal(strAmount);
-        Boolean isFraud = "1".equals(strIsFraud);
-        Boolean isFlaggedFraud = "1".equals(strIsFlaggedFraud);
-
-        BigDecimal oldAmountOrig = new BigDecimal(strOldbalanceOrg);
-        BigDecimal newAmountOrig = new BigDecimal(strNewbalanceOrig);
-
-        BigDecimal oldAmountDest = new BigDecimal(strPldbalanceDest);
-        BigDecimal newAmountDest = new BigDecimal(strNewbalanceDest);
-
-        TransactionInfo info = new TransactionInfo(step, type, amount, isFraud, isFlaggedFraud);
-        BalanceInfo origin = new BalanceInfo(strNameOrig, oldAmountOrig, newAmountOrig);
-        BalanceInfo destination = new BalanceInfo(strNameDest, oldAmountDest, newAmountDest);
-
-        return Optional.of(new Transaction(info, origin, destination));
-    }
-
     public static String[] strLineToArray(String line) {
         return line.split(",");
     }
+
+    public static Optional<Transaction> parseTransaction(String strStep,
+                                                         String strType,
+                                                         String strAmount,
+                                                         String strNameOrig,
+                                                         String strOldbalanceOrg,
+                                                         String strNewbalanceOrig,
+                                                         String strNameDest,
+                                                         String strPldbalanceDest,
+                                                         String strNewbalanceDest,
+                                                         String strIsFraud,
+                                                         String strIsFlaggedFraud) {
+        Integer step = parseStep(strStep);
+        TransactionType type = parseTrxType(strType);
+        BigDecimal amount = parseAmount(strAmount, "amount");
+        Boolean isFraud = parseBoolean(strIsFraud, "isFraud");
+        Boolean isFlaggedFraud = parseBoolean(strIsFraud, "isFlaggedFraud");
+
+        BigDecimal oldAmountOrig = parseAmount(strOldbalanceOrg, "oldAmountOrig");
+        BigDecimal newAmountOrig = parseAmount(strNewbalanceOrig, "newAmountOrig");
+
+        BigDecimal oldAmountDest = parseAmount(strPldbalanceDest, "oldAmountDest");
+        BigDecimal newAmountDest = parseAmount(strNewbalanceDest, "newAmountDest");
+
+        TransactionCustomer origin = new TransactionCustomer(strNameOrig, oldAmountOrig, newAmountOrig);
+        TransactionCustomer destination = new TransactionCustomer(strNameDest, oldAmountDest, newAmountDest);
+
+        return Optional.of(new Transaction(step, type, amount, isFraud, isFlaggedFraud, origin, destination));
+    }
+
+    private static Integer parseStep(String value) {
+        try {
+            return Integer.parseInt(value);
+        } catch (Exception ex) {
+            throw new IllegalArgumentException("Invalid step");
+        }
+    }
+
+    private static TransactionType parseTrxType(String value) {
+        try {
+            return TransactionType.valueOf(value);
+        } catch (Exception ex) {
+            throw new IllegalArgumentException("Invalid trx type.");
+        }
+    }
+
+    private static BigDecimal parseAmount(String value, String field) {
+        try {
+            return new BigDecimal(value);
+        } catch (Exception ex) {
+            throw new IllegalArgumentException(String.format("Invalid %s", field));
+        }
+    }
+
+    private static Boolean parseBoolean(String value, String field) {
+        try {
+            if (!"1".equals(value) && !"0".equals(value)) {
+                throw new IllegalArgumentException();
+            }
+            return "1".equals(value);
+        } catch (Exception ex) {
+            throw new IllegalArgumentException(String.format("Invalid %s", field));
+        }
+    }
+
 }
