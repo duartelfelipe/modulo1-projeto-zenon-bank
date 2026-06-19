@@ -13,24 +13,24 @@ public class TransactionConverter {
                                                          String strType,
                                                          String strAmount,
                                                          String strNameOrig,
-                                                         String strOldbalanceOrg,
-                                                         String strNewbalanceOrig,
+                                                         String strOldBalanceOrg,
+                                                         String strNewBalanceOrig,
                                                          String strNameDest,
-                                                         String strPldbalanceDest,
-                                                         String strNewbalanceDest,
+                                                         String strOldBalanceDest,
+                                                         String strNewBalanceDest,
                                                          String strIsFraud,
                                                          String strIsFlaggedFraud) {
         Integer step = parseStep(strStep);
         TransactionType type = parseTrxType(strType);
         BigDecimal amount = parseAmount(strAmount, "amount");
         Boolean isFraud = parseBoolean(strIsFraud, "isFraud");
-        Boolean isFlaggedFraud = parseBoolean(strIsFraud, "isFlaggedFraud");
+        Boolean isFlaggedFraud = parseBoolean(strIsFlaggedFraud, "isFlaggedFraud");
 
-        BigDecimal oldAmountOrig = parseAmount(strOldbalanceOrg, "oldAmountOrig");
-        BigDecimal newAmountOrig = parseAmount(strNewbalanceOrig, "newAmountOrig");
+        BigDecimal oldAmountOrig = parseAmount(strOldBalanceOrg, "oldAmountOrig");
+        BigDecimal newAmountOrig = parseAmount(strNewBalanceOrig, "newAmountOrig");
 
-        BigDecimal oldAmountDest = parseAmount(strPldbalanceDest, "oldAmountDest");
-        BigDecimal newAmountDest = parseAmount(strNewbalanceDest, "newAmountDest");
+        BigDecimal oldAmountDest = parseAmount(strOldBalanceDest, "oldAmountDest");
+        BigDecimal newAmountDest = parseAmount(strNewBalanceDest, "newAmountDest");
 
         TransactionCustomer origin = new TransactionCustomer(strNameOrig, oldAmountOrig, newAmountOrig);
         TransactionCustomer destination = new TransactionCustomer(strNameDest, oldAmountDest, newAmountDest);
@@ -64,9 +64,9 @@ public class TransactionConverter {
 
     private static Boolean parseBoolean(String value, String field) {
         try {
-            if (!"1".equals(value) && !"0".equals(value)) {
-                throw new IllegalArgumentException();
-            }
+//            if (!"1".equals(value) && !"0".equals(value)) {
+//                throw new IllegalArgumentException();
+//            }
             return "1".equals(value);
         } catch (Exception ex) {
             throw new IllegalArgumentException(String.format("Invalid %s", field));
