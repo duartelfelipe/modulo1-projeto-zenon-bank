@@ -1,55 +1,79 @@
 package br.com.zenon.fraud;
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class FraudAnalyzer {
 
-    public static void analyze(List<Transaction> transactions) {
-        List<Transaction> frauds = transactions.stream()
-                .filter(Transaction::isFraud)
-                .toList();
+    private final List<Transaction> transactions;
 
-        long totalFrauds = frauds.size();
-        IO.println(String.format("1. Total de Fraudes: %d", totalFrauds));
+    public FraudAnalyzer(List<Transaction> transactions) {
+        Objects.requireNonNull(transactions);
+        this.transactions = transactions;
+    }
 
+    public void analyze() {
         DecimalFormat df = new DecimalFormat("#,##0.00");
-        List<String> top3MaxAmount = transactions.stream()
-                .filter(Transaction::isFraud)
-                .map(trx -> trx.amount().abs())
-                .sorted(Comparator.reverseOrder())
-                .limit(3)
-                .map(df::format)
-                .toList();
+
+        IO.println(String.format("1. Total  de Fraudes: %d", countFrauds()));
+
         IO.println("2. Top 3 Fraudes de Maior Valor:");
-        top3MaxAmount.forEach(IO::println);
+        List<BigDecimal> topAmountFrauds = getTopAmountFrauds(3);
+        topAmountFrauds.stream().map(df::format).forEach(IO::println);
 
-        Set<String> topCustomers = transactions.stream()
-                .filter(Transaction::isFraud)
-                .sorted(Comparator.comparing(Transaction::amount).reversed())
-                .map(trx -> trx.origin().customer())
-                .limit(5)
-                .collect(Collectors.toSet());
         IO.println("3. Clientes suspeitos:");
-        topCustomers.forEach(IO::println);
+        getTopFraudulentCustomers(5).forEach(IO::println);
 
-        double sumFraudsAmount = transactions.stream()
-                .filter(Transaction::isFraud)
-                .mapToDouble(trx -> trx.amount().doubleValue())
-                .sum();
-        IO.println("4. Prejuizo total: " + df.format(sumFraudsAmount));
+        IO.println("4. Prejuizo total: " + df.format(sumFraudsAmount()));
 
         IO.println("5. Fraudes por Tipo:");
-        transactions.stream()
-                .filter(Transaction::isFraud)
-                .collect(Collectors.groupingBy(
-                        Transaction::type,
-                        Collectors.counting()
-                ))
-                .forEach((k, v) -> IO.println(" - " + k + ": " + v));
+        countFraudsByType().forEach((k, v) -> IO.println(" - " + k + ": " + v));
+    }
+
+    private long countFrauds() {
+        return fraudsStream()
+                .count();
+    }
+
+    private List<BigDecimal> getTopAmountFrauds(int limit) {
+        return fraudsStream()
+                .sorted(Comparator.comparing(Transaction::amount).reversed())
+                .map(Transaction::amount)
+                .limit(limit)
+                .toList();
+    }
+
+    private List<String> getTopFraudulentCustomers(int limit) {
+        return fraudsStream()
+                .sorted(Comparator.comparing(Transaction::amount).reversed())
+                .map(trx -> trx.origin().customer())
+                .distinct()
+                .limit(limit)
+                .toList();
+    }
+
+
+    private BigDecimal sumFraudsAmount() {
+//        return new BigDecimal(transactions.stream()
+//                .filter(Transaction::isFraud)
+//                .mapToDouble(trx -> trx.amount().doubleValue())
+//                .sum());
+        return fraudsStream()
+                .map(Transaction::amount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private Map<TransactionType, Long> countFraudsByType() {
+        return fraudsStream()
+                .collect(Collectors.groupingBy(Transaction::type, Collectors.counting()));
+    }
+
+    private Stream<Transaction> fraudsStream() {
+        return transactions.stream()
+                .filter(Transaction::isFraud);
     }
 
 }

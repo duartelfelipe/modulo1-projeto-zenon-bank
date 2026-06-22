@@ -8,28 +8,23 @@ import java.util.Optional;
 
 public class TransactionIngestor {
 
-    private final String fileName;
-    private final int batchSize;
+    private static final String FILE_NAME = "data/paysim_log.csv";
+    private static final int BATCH_SIZE = 50_000;
 
-    TransactionIngestor(String fileName, int batchSize) {
-        this.fileName = fileName;
-        this.batchSize = batchSize;
-    }
-
-    public List<Transaction> loadTransactions() throws IOException {
-        Path path = Path.of(fileName);
+    public List<Transaction>  loadTransactions() throws IOException {
+        Path path = Path.of(FILE_NAME);
 
         try {
             List<String> lines = Files.readAllLines(path);
             return lines.stream()
                     .skip(1)
-                    .limit(batchSize)
+                    .limit(BATCH_SIZE)
                     .map(this::processLine)
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .toList();
         } catch (Exception ex) {
-            throw new RuntimeException("Unexpected error reading file: " + fileName, ex);
+            throw new RuntimeException("Unexpected error reading file: " + FILE_NAME, ex);
         }
     }
 

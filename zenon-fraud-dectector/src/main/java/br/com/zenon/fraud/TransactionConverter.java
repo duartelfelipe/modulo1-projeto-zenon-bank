@@ -64,9 +64,9 @@ public class TransactionConverter {
 
     private static Boolean parseBoolean(String value, String field) {
         try {
-//            if (!"1".equals(value) && !"0".equals(value)) {
-//                throw new IllegalArgumentException();
-//            }
+            if (!"1".equals(value) && !"0".equals(value)) {
+                throw new IllegalArgumentException();
+            }
             return "1".equals(value);
         } catch (Exception ex) {
             throw new IllegalArgumentException(String.format("Invalid %s", field));
