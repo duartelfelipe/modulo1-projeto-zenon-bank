@@ -9,17 +9,60 @@ public class TransactionConverter {
         return line.split(",");
     }
 
-    public static Optional<Transaction> parseTransaction(String strStep,
-                                                         String strType,
-                                                         String strAmount,
-                                                         String strNameOrig,
-                                                         String strOldBalanceOrg,
-                                                         String strNewBalanceOrig,
-                                                         String strNameDest,
-                                                         String strOldBalanceDest,
-                                                         String strNewBalanceDest,
-                                                         String strIsFraud,
-                                                         String strIsFlaggedFraud) {
+    public static Optional<Transaction> parseTransaction(String line) {
+        try {
+            String[] lineChunks = TransactionConverter.strLineToArray(line);
+            validateLineChunksSize(lineChunks);
+
+            int i = 0;
+            String strStep = lineChunks[i++];
+            String strType = lineChunks[i++];
+            String strAmount = lineChunks[i++];
+            String strNameOrig = lineChunks[i++];
+            String strOldBalanceOrig = lineChunks[i++];
+            String strNewBalanceOrig = lineChunks[i++];
+            String strNameDest = lineChunks[i++];
+            String strPldBalanceDest = lineChunks[i++];
+            String strNewBalanceDest = lineChunks[i++];
+            String strIsFraud = lineChunks[i++];
+            String strIsFlaggedFraud = lineChunks[i++];
+
+            return toTransaction(
+                    strStep,
+                    strType,
+                    strAmount,
+                    strNameOrig,
+                    strOldBalanceOrig,
+                    strNewBalanceOrig,
+                    strNameDest,
+                    strPldBalanceDest,
+                    strNewBalanceDest,
+                    strIsFraud,
+                    strIsFlaggedFraud
+            );
+        } catch (Exception ex) {
+            System.err.println("Parse error: " + line + " | " + ex);
+            return Optional.empty();
+        }
+    }
+
+    private static void validateLineChunksSize(String[] line) {
+        if (line.length != 11) {
+            throw new IllegalArgumentException("Invalid line.");
+        }
+    }
+
+    private static Optional<Transaction> toTransaction(String strStep,
+                                                       String strType,
+                                                       String strAmount,
+                                                       String strNameOrig,
+                                                       String strOldBalanceOrg,
+                                                       String strNewBalanceOrig,
+                                                       String strNameDest,
+                                                       String strOldBalanceDest,
+                                                       String strNewBalanceDest,
+                                                       String strIsFraud,
+                                                       String strIsFlaggedFraud) {
         Integer step = parseStep(strStep);
         TransactionType type = parseTrxType(strType);
         BigDecimal amount = parseAmount(strAmount, "amount");
