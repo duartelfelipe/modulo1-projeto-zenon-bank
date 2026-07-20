@@ -33,9 +33,11 @@ public class TransactionReport {
         }
     }
 
-    public void report(Locale locale) {
+    public void
+    report(Locale locale) {
         Path path = Path.of(FILE_PATH);
         NumberFormat numberFormat = NumberFormat.getCurrencyInstance(locale);
+        NumberFormat integerFormat = NumberFormat.getIntegerInstance(locale);
         ResourceBundle msg = ResourceBundle.getBundle("mensagens", locale);
 
         long start = System.nanoTime();
@@ -52,8 +54,8 @@ public class TransactionReport {
                     );
 
 
-            IO.println(msg.getString("total.transacoes") + ": " + sum.totalLines());
-            IO.println(msg.getString("total.fraudes") + ": " + sum.totalFrauds());
+            IO.println(msg.getString("total.transacoes") + ": " + integerFormat.format(sum.totalLines()));
+            IO.println(msg.getString("total.fraudes") + ": " + integerFormat.format(sum.totalFrauds()));
             IO.println(msg.getString("valor.total.transacionado") + ": " + numberFormat.format(sum.totalAmount()));
 
         } catch (Exception ex) {

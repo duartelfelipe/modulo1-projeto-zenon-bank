@@ -16,22 +16,5 @@ public class ReportMain {
         locale = Locale.US;
         IO.println("=======US=======");
         new TransactionReport().report(locale);
-
-//        var countLines = new TransactionReport().read()
-//                .skip(1)
-//                .count();
-
-//        long countFrauds = new TransactionReport().read()
-//                .skip(1)
-//                .map(TransactionConverter::parseTransaction)
-//                .filter(Optional::isPresent)
-//                .map(Optional::get)
-//                .filter(Transaction::isFraud)
-//                .count();
-
-//        IO.println("Total de linhas: " + countLines);
-//        IO.println("Total de fraudes: " + countFrauds);
     }
-
-
 }
