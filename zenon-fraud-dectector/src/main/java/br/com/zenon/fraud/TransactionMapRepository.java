@@ -35,4 +35,9 @@ public class TransactionMapRepository implements TransactionRepository {
         return optTrx;
     }
 
+    @Override
+    public void save(Transaction transaction) {
+        throw new UnsupportedOperationException("");
+    }
+
 }

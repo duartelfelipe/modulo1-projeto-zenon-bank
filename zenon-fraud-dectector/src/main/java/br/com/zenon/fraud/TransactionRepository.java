@@ -7,5 +7,6 @@ import java.util.Optional;
 public interface TransactionRepository {
 
     Optional<Transaction> findByOriginCustomer(String name);
+    void save(Transaction transaction);
 
 }

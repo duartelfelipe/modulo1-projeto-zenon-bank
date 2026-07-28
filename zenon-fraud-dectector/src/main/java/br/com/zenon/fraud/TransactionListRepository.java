@@ -28,4 +28,9 @@ public class TransactionListRepository implements  TransactionRepository{
         return optTrx;
     }
 
+    @Override
+    public void save(Transaction transaction) {
+        throw new UnsupportedOperationException("");
+    }
+
 }
