@@ -8,5 +8,7 @@ public interface TransactionRepository {
 
     Optional<Transaction> findByOriginCustomer(String name);
     void save(Transaction transaction);
+    void saveBatch(List<Transaction> transactions);
+    void saveThreadBatch(List<Transaction> transactions);
 
 }

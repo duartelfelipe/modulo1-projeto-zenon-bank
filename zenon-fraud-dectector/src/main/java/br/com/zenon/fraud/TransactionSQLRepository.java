@@ -8,6 +8,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class TransactionSQLRepository implements TransactionRepository {
 
@@ -91,6 +93,111 @@ public class TransactionSQLRepository implements TransactionRepository {
 
             ps.execute();
 
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void saveBatch(List<Transaction> transactions) {
+
+        int batchSize = 1000;
+        int count = 0;
+
+        String sql = """
+                INSERT INTO transaction
+                    (step, type, amount, isFraud, isFlaggedFraud,
+                     nameOrigin, originOldAmount, originNewAmount,
+                     nameDestination, destinationOldAmount, destinationNewAmount)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?)
+                """;
+
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            conn.setAutoCommit(false);
+
+            for (Transaction t : transactions) {
+                ps.setInt(1, t.step());
+                ps.setString(2, t.type().name());
+                ps.setBigDecimal(3, t.amount());
+                ps.setBoolean(4, t.isFraud());
+                ps.setBoolean(5, t.isFlaggedFraud());
+                ps.setString(6, t.origin().customer());
+                ps.setBigDecimal(7, t.origin().oldAmount());
+                ps.setBigDecimal(8, t.origin().newAmount());
+                ps.setString(9, t.destination().customer());
+                ps.setBigDecimal(10, t.destination().oldAmount());
+                ps.setBigDecimal(11, t.destination().newAmount());
+                ps.addBatch();
+
+                if (++count % batchSize == 0) {
+                    int[] results = ps.executeBatch();
+                    ps.clearBatch(); // Clear for next chunk
+                }
+            }
+
+            ps.executeBatch();
+            conn.commit();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void saveThreadBatch(List<Transaction> transactions) {
+
+
+        String sql = """
+                INSERT INTO transaction
+                    (step, type, amount, isFraud, isFlaggedFraud,
+                     nameOrigin, originOldAmount, originNewAmount,
+                     nameDestination, destinationOldAmount, destinationNewAmount)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?)
+                """;
+
+        Executor executor = Executors.newFixedThreadPool(100);
+
+        try (Connection conn = ConnectionFactory.getConnection()) {
+
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+
+
+//            executor.execute(() -> {
+                int batchSize = 1000;
+                int count = 0;
+
+//                for (Transaction t : transactions) {
+//                    ps.setInt(1, t.step());
+//                    ps.setString(2, t.type().name());
+//                    ps.setBigDecimal(3, t.amount());
+//                    ps.setBoolean(4, t.isFraud());
+//                    ps.setBoolean(5, t.isFlaggedFraud());
+//                    ps.setString(6, t.origin().customer());
+//                    ps.setBigDecimal(7, t.origin().oldAmount());
+//                    ps.setBigDecimal(8, t.origin().newAmount());
+//                    ps.setString(9, t.destination().customer());
+//                    ps.setBigDecimal(10, t.destination().oldAmount());
+//                    ps.setBigDecimal(11, t.destination().newAmount());
+//                    ps.addBatch();
+//
+//                    if (++count % batchSize == 0) {
+//                        int[] results = ps.executeBatch();
+//                        ps.clearBatch(); // Clear for next chunk
+//                    }
+//                }
+//            });
+
+                ps.executeBatch();
+                conn.commit();
+
+            } catch (Exception e) {
+                conn.rollback();
+                throw new RuntimeException(e);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

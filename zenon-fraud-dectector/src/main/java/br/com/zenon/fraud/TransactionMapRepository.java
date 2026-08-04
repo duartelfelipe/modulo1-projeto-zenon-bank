@@ -40,4 +40,14 @@ public class TransactionMapRepository implements TransactionRepository {
         throw new UnsupportedOperationException("");
     }
 
+    @Override
+    public void saveBatch(List<Transaction> transactions) {
+        throw new UnsupportedOperationException("");
+    }
+
+    @Override
+    public void saveThreadBatch(List<Transaction> transactions) {
+        throw new UnsupportedOperationException("");
+    }
+
 }
