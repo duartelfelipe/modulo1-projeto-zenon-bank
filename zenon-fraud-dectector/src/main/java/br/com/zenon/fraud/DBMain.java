@@ -31,9 +31,9 @@ public class DBMain {
         end = System.nanoTime();
         IO.println("Tempo insert batch (ms): " + (end - start) / 1_000_000.0);
 
-        start = System.nanoTime();
-        database.saveThreadBatch(transactions);
-        end = System.nanoTime();
-        IO.println("Tempo insert thread batch (ms): " + (end - start) / 1_000_000.0);
+//        start = System.nanoTime();
+//        database.saveThreadBatch(transactions);
+//        end = System.nanoTime();
+//        IO.println("Tempo insert thread batch (ms): " + (end - start) / 1_000_000.0);
     }
 }
