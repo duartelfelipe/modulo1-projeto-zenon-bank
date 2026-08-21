@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -21,11 +22,12 @@ public class EfficientTransactionIngestor {
     private static final int BATCH_SIZE = 10_000;
     private static final int JDBC_BATCH_SIZE = 5000;
 
+    Semaphore permitThreads = new Semaphore(50);
+
     public void loadTransactions(Consumer<List<Transaction>> consumer) {
         Path path = Path.of(FILE_NAME);
 
-
-        try (ExecutorService executor = Executors.newFixedThreadPool(10);
+        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
              Stream<String> lines = Files.lines(path).skip(1)/*.limit(BATCH_SIZE)*/) {
 
             var iterator = lines.iterator();
@@ -58,6 +60,17 @@ public class EfficientTransactionIngestor {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-        consumer.accept(transactionsBatch);
+
+        try {
+            permitThreads.acquire();
+
+            try {
+                consumer.accept(transactionsBatch);
+            } finally {
+                permitThreads.release();
+            }
+        } catch (InterruptedException iex) {
+            Thread.currentThread().interrupt();
+        }
     }
 }
